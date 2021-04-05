@@ -1224,6 +1224,14 @@ func WriteAssets(encoder serde.Encoder, opts *AssetOpts, objectStoreBackend Back
 		return err
 	}
 
+	// PG Bouncer
+	if err := encoder.Encode(PGBouncerService(opts)); err != nil {
+		return err
+	}
+	if err := encoder.Encode(PGBouncerDeployment(opts)); err != nil {
+		return err
+	}
+
 	// If we're deploying the enterprise server, use a different service definition with the correct ports.
 	if opts.EnterpriseServer {
 		if err := encoder.Encode(EnterpriseService(opts)); err != nil {
@@ -1411,6 +1419,7 @@ func Images(opts *AssetOpts) []string {
 		pauseImage,
 		versionedPachdImage(opts),
 		opts.DashImage,
+		pgBouncerImage,
 	}
 }
 

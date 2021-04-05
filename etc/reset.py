@@ -375,8 +375,6 @@ async def main():
     parser.add_argument("--builders", action="store_true", help="Deploy images used in pipeline builds")
     args = parser.parse_args()
 
-    if "GOPATH" not in os.environ:
-        raise Exception("Must set GOPATH")
     if "PACH_CA_CERTS" in os.environ:
         raise Exception("Must unset PACH_CA_CERTS\nRun:\nunset PACH_CA_CERTS")
     if args.ide and "PACH_ENTERPRISE_KEY" not in os.environ:

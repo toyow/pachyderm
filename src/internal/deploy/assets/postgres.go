@@ -27,6 +27,13 @@ var (
 	postgresInitConfigMapName       = "postgres-init-cm"
 	postgresVolumeClaimName         = "postgres-storage"
 	defaultPostgresStorageClassName = "postgres-storage-class"
+	postgresUser                    = dbutil.DefaultUser
+	postgresPassword                = "elephantastic"
+	postgresDBName                  = dbutil.DefaultDBName
+
+	pgBouncerName = "pg-bouncer"
+	// https://github.com/edoburu/docker-pgbouncer
+	pgBouncerImage = "edoburu/pgbouncer:1.15.0"
 )
 
 // PostgresOpts are options that are applicable to postgres.
@@ -349,9 +356,8 @@ func PostgresService(opts *AssetOpts) *v1.Service {
 			},
 			Ports: []v1.ServicePort{
 				{
-					Port:     5432,
-					Name:     "client-port",
-					NodePort: opts.PostgresOpts.Port,
+					Port: 5432,
+					Name: "client-port",
 				},
 			},
 		},
@@ -377,6 +383,80 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     GRANT ALL PRIVILEGES ON DATABASE dex TO postgres;
 EOSQL
 `,
+		},
+	}
+}
+
+// PostgresService generates a Service for the pachyderm pg bouncer deployment.
+func PGBouncerService(opts *AssetOpts) *v1.Service {
+	return &v1.Service{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Service",
+			APIVersion: "v1",
+		},
+		ObjectMeta: objectMeta(pgBouncerName, labels(pgBouncerName), nil, opts.Namespace),
+		Spec: v1.ServiceSpec{
+			Type: v1.ServiceTypeNodePort,
+			Selector: map[string]string{
+				"app": pgBouncerName,
+			},
+			Ports: []v1.ServicePort{
+				{
+					Port:     5432,
+					Name:     "client-port",
+					NodePort: opts.PostgresOpts.Port,
+				},
+			},
+		},
+	}
+}
+
+// PGBouncerDeployment
+func PGBouncerDeployment(opts *AssetOpts) *apps.Deployment {
+	return &apps.Deployment{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Deployment",
+			APIVersion: "apps/v1",
+		},
+		ObjectMeta: objectMeta(pgBouncerName, labels(pgBouncerName), nil, opts.Namespace),
+		Spec: apps.DeploymentSpec{
+			Replicas: replicas(1),
+			Selector: &metav1.LabelSelector{
+				MatchLabels: labels(pgBouncerName),
+			},
+			Template: v1.PodTemplateSpec{
+				ObjectMeta: objectMeta(pgBouncerName, labels(pgBouncerName),
+					map[string]string{IAMAnnotation: opts.IAMRole}, opts.Namespace),
+				Spec: v1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Name:  pachdName,
+							Image: pgBouncerName,
+							Env: []v1.EnvVar{
+								{Name: "DB_USER", Value: postgresUser},
+								{Name: "DB_NAME", Value: postgresDBName},
+								{Name: "DB_PASSWORD", Value: postgresPassword},
+								{Name: "DB_HOST", Value: postgresHeadlessServiceName},
+								{Name: "AUTH_TYPE", Value: "trust"},
+							},
+							Ports: []v1.ContainerPort{
+								{
+									ContainerPort: 5432,
+									Name:          "client-port",
+								},
+							},
+							ImagePullPolicy: "IfNotPresent",
+							Resources: v1.ResourceRequirements{
+								Requests: v1.ResourceList{
+									v1.ResourceCPU:    resource.MustParse(opts.PostgresOpts.CPURequest),
+									v1.ResourceMemory: resource.MustParse(opts.PostgresOpts.MemRequest),
+								},
+							},
+						},
+					},
+					ServiceAccountName: ServiceAccountName,
+				},
+			},
 		},
 	}
 }
