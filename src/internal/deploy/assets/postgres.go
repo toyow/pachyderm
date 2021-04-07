@@ -425,18 +425,17 @@ func PGBouncerDeployment(opts *AssetOpts) *apps.Deployment {
 				MatchLabels: labels(pgBouncerName),
 			},
 			Template: v1.PodTemplateSpec{
-				ObjectMeta: objectMeta(pgBouncerName, labels(pgBouncerName),
-					map[string]string{IAMAnnotation: opts.IAMRole}, opts.Namespace),
+				ObjectMeta: objectMeta(pgBouncerName, labels(pgBouncerName), nil, opts.Namespace),
 				Spec: v1.PodSpec{
 					Containers: []v1.Container{
 						{
 							Name:  pachdName,
-							Image: pgBouncerName,
+							Image: pgBouncerImage,
 							Env: []v1.EnvVar{
 								{Name: "DB_USER", Value: postgresUser},
 								{Name: "DB_NAME", Value: postgresDBName},
 								{Name: "DB_PASSWORD", Value: postgresPassword},
-								{Name: "DB_HOST", Value: postgresHeadlessServiceName},
+								{Name: "DB_HOST", Value: "postgres." + opts.Namespace},
 								{Name: "AUTH_TYPE", Value: "trust"},
 							},
 							Ports: []v1.ContainerPort{
