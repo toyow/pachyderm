@@ -29,7 +29,6 @@ var (
 	defaultPostgresStorageClassName = "postgres-storage-class"
 	postgresUser                    = dbutil.DefaultUser
 	postgresPassword                = "elephantastic"
-	postgresDBName                  = dbutil.DefaultDBName
 
 	pgBouncerName = "pg-bouncer"
 	// https://github.com/edoburu/docker-pgbouncer
@@ -433,7 +432,6 @@ func PGBouncerDeployment(opts *AssetOpts) *apps.Deployment {
 							Image: pgBouncerImage,
 							Env: []v1.EnvVar{
 								{Name: "DB_USER", Value: postgresUser},
-								{Name: "DB_NAME", Value: postgresDBName},
 								{Name: "DB_PASSWORD", Value: postgresPassword},
 								{Name: "DB_HOST", Value: "postgres." + opts.Namespace},
 								{Name: "AUTH_TYPE", Value: "trust"},

@@ -659,6 +659,10 @@ func PachdDeployment(opts *AssetOpts, objectStoreBackend Backend, hostPath strin
 			Name:  client.PPSWorkerPortEnv,
 			Value: "80",
 		},
+		{
+			Name:  "POSTGRES_SERVICE_HOST",
+			Value: "pg-bouncer." + opts.Namespace,
+		},
 	}
 	envVars = append(envVars, GetSecretEnvVars("")...)
 	envVars = append(envVars, getStorageEnvVars(opts)...)
