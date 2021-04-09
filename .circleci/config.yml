@@ -8,7 +8,7 @@ jobs:
     parameters:
       bucket:
         type: string
-    resource_class: 2xlarge
+    resource_class: large
     machine:
       image: ubuntu-2004:202101-01
     environment:
