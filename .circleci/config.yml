@@ -12,7 +12,7 @@ jobs:
     machine:
       image: ubuntu-2004:202101-01
     environment:
-      PPS_BUCKETS: "4"
+      PPS_BUCKETS: "6"
       GOPROXY: https://proxy.golang.org
       BUCKET: << parameters.bucket >>
     steps:
@@ -41,5 +41,7 @@ workflows:
               - PPS2
               - PPS3
               - PPS4
+              - PPS5
+              - PPS6
               - EXAMPLES
               - OBJECT
