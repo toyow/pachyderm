@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"path"
 
-	"github.com/pachyderm/pachyderm/v2/src/internal/dbutil"
 	apps "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -17,6 +16,11 @@ import (
 // The primary motivation for this would be to avoid the deadlock that can occur when using a ReadWriteOnce volume mount
 // with a kubernetes Deployment.
 
+const (
+	PostgresUser   = "pachyderm"
+	PostgresDBName = "pgc"
+)
+
 var (
 	postgresImage = "postgres:13.0-alpine"
 
@@ -27,8 +31,6 @@ var (
 	postgresInitConfigMapName       = "postgres-init-cm"
 	postgresVolumeClaimName         = "postgres-storage"
 	defaultPostgresStorageClassName = "postgres-storage-class"
-	postgresUser                    = dbutil.DefaultUser
-	postgresPassword                = "elephantastic"
 
 	pgBouncerName = "pg-bouncer"
 	// https://github.com/edoburu/docker-pgbouncer
@@ -150,7 +152,7 @@ func PostgresDeployment(opts *AssetOpts, hostPath string) *apps.Deployment {
 								// TODO: Figure out how we want to handle auth in real deployments.
 								// The auth has been removed for now to allow PFS tests to run against
 								// a deployed Postgres instance.
-								{Name: "POSTGRES_DB", Value: dbutil.DefaultDBName},
+								{Name: "POSTGRES_DB", Value: PostgresDBName},
 								{Name: "POSTGRES_HOST_AUTH_METHOD", Value: "trust"},
 							},
 						},
@@ -288,7 +290,7 @@ func PostgresStatefulSet(opts *AssetOpts, backend Backend, diskSpace int) interf
 							// a deployed Postgres instance.
 							"env": []map[string]interface{}{{
 								"name":  "POSTGRES_DB",
-								"value": dbutil.DefaultDBName,
+								"value": PostgresDBName,
 							}, {
 								"name":  "POSTGRES_HOST_AUTH_METHOD",
 								"value": "trust",
@@ -431,8 +433,7 @@ func PGBouncerDeployment(opts *AssetOpts) *apps.Deployment {
 							Name:  pachdName,
 							Image: pgBouncerImage,
 							Env: []v1.EnvVar{
-								{Name: "DB_USER", Value: postgresUser},
-								{Name: "DB_PASSWORD", Value: postgresPassword},
+								{Name: "DB_USER", Value: PostgresUser},
 								{Name: "DB_HOST", Value: "postgres." + opts.Namespace},
 								{Name: "AUTH_TYPE", Value: "trust"},
 							},

@@ -10,6 +10,15 @@ import (
 	"github.com/pachyderm/pachyderm/v2/src/internal/require"
 )
 
+const (
+	// DefaultHost is the default host used by NewTestDB.
+	DefaultTestHost = "127.0.0.1"
+	// DefaultPort is the default port used by NewTestDB.
+	DefaultTestPort = 5432
+	// DefaultUser is the default user used by NewTestDB.
+	DefaultTestUser = "postgres"
+)
+
 // set this to true if you want to keep the database around
 var devDontDropDatabase = false
 
@@ -49,6 +58,9 @@ func NewTestDB(t testing.TB) *sqlx.DB {
 
 // withDB creates a database connection that is scoped to the passed in callback.
 func withDB(cb func(*sqlx.DB) error, opts ...Option) (retErr error) {
+	opts = append([]Option{
+		WithHostPort(DefaultTestHost, DefaultTestPort),
+	}, opts...)
 	db, err := NewDB(opts...)
 	if err != nil {
 		return err

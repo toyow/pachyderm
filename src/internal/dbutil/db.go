@@ -9,14 +9,6 @@ import (
 )
 
 const (
-	// DefaultHost is the default host.
-	DefaultHost = "127.0.0.1"
-	// DefaultPort is the default port.
-	DefaultPort = 32228
-	// DefaultUser is the default user
-	DefaultUser = "postgres"
-	// DefaultDBName is the default DB name.
-	DefaultDBName = "pgc"
 	// DefaultMaxOpenConns is the argument passed to SetMaxOpenConns
 	DefaultMaxOpenConns = 3
 )
@@ -32,10 +24,7 @@ type dBConfig struct {
 // NewDB creates a new DB.
 func NewDB(opts ...Option) (*sqlx.DB, error) {
 	dbc := &dBConfig{
-		host:         DefaultHost,
-		port:         DefaultPort,
-		user:         DefaultUser,
-		name:         DefaultDBName,
+		user:         "postgres",
 		maxOpenConns: DefaultMaxOpenConns,
 	}
 	for _, opt := range opts {
