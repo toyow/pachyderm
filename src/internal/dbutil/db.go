@@ -1,7 +1,6 @@
 package dbutil
 
 import (
-	"context"
 	"strconv"
 	"strings"
 
@@ -61,11 +60,4 @@ func NewDB(opts ...Option) (*sqlx.DB, error) {
 		db.SetMaxOpenConns(dbc.maxOpenConns)
 	}
 	return db, nil
-}
-
-// Interface is the common interface exposed by *sqlx.Tx and *sqlx.DB
-type Interface interface {
-	sqlx.ExtContext
-	GetContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
-	SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
 }

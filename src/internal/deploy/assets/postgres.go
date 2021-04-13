@@ -153,6 +153,7 @@ func PostgresDeployment(opts *AssetOpts, hostPath string) *apps.Deployment {
 								// The auth has been removed for now to allow PFS tests to run against
 								// a deployed Postgres instance.
 								{Name: "POSTGRES_DB", Value: PostgresDBName},
+								{Name: "POSTGRES_USER", Value: PostgresUser},
 								{Name: "POSTGRES_HOST_AUTH_METHOD", Value: "trust"},
 							},
 						},
@@ -294,6 +295,9 @@ func PostgresStatefulSet(opts *AssetOpts, backend Backend, diskSpace int) interf
 							}, {
 								"name":  "POSTGRES_HOST_AUTH_METHOD",
 								"value": "trust",
+							}, {
+								"name":  "POSTGRES_USER",
+								"value": PostgresUser,
 							}},
 							"ports": []interface{}{
 								map[string]interface{}{
@@ -381,7 +385,7 @@ set -e
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     CREATE DATABASE dex;
-    GRANT ALL PRIVILEGES ON DATABASE dex TO postgres;
+    GRANT ALL PRIVILEGES ON DATABASE dex TO pachyderm;
 EOSQL
 `,
 		},
@@ -434,6 +438,7 @@ func PGBouncerDeployment(opts *AssetOpts) *apps.Deployment {
 							Image: pgBouncerImage,
 							Env: []v1.EnvVar{
 								{Name: "DB_USER", Value: PostgresUser},
+								{Name: "DB_PASSWORD", Value: "elephantastic"},
 								{Name: "DB_HOST", Value: "postgres." + opts.Namespace},
 								{Name: "AUTH_TYPE", Value: "trust"},
 							},

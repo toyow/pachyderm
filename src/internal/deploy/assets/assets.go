@@ -663,6 +663,14 @@ func PachdDeployment(opts *AssetOpts, objectStoreBackend Backend, hostPath strin
 			Name:  "POSTGRES_SERVICE_HOST",
 			Value: "pg-bouncer." + opts.Namespace,
 		},
+		{
+			Name:  "POSTGRES_DB",
+			Value: PostgresDBName,
+		},
+		{
+			Name:  "POSTGRES_USER",
+			Value: PostgresUser,
+		},
 	}
 	envVars = append(envVars, GetSecretEnvVars("")...)
 	envVars = append(envVars, getStorageEnvVars(opts)...)

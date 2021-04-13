@@ -201,17 +201,28 @@ func (env *NonblockingServiceEnv) initDBClient() error {
 	return backoff.Retry(func() error {
 		host, ok := os.LookupEnv("POSTGRES_SERVICE_HOST")
 		if !ok {
-			return errors.Errorf("postgres service host not found")
+			return errors.Errorf("POSTGRES_SERVICE_HOST env var not set")
 		}
 		portStr, ok := os.LookupEnv("POSTGRES_SERVICE_PORT")
 		if !ok {
-			return errors.Errorf("postgres service port not found")
+			return errors.Errorf("POSTGRES_SERVICE_PORT env var not set")
 		}
 		port, err := strconv.Atoi(portStr)
 		if err != nil {
 			return err
 		}
-		db, err := dbutil.NewDB(dbutil.WithHostPort(host, port))
+		dbName, ok := os.LookupEnv("POSTGRES_DB")
+		if !ok {
+			return errors.Errorf("POSTGRES_DB env var not set")
+		}
+		user, ok := os.LookupEnv("POSTGRES_USER")
+		if !ok {
+			return errors.Errorf("POSTGRES_USER env var not set")
+		}
+		db, err := dbutil.NewDB(
+			dbutil.WithUserPassword(user, "elephantastic"),
+			dbutil.WithHostPort(host, port),
+			dbutil.WithDBName(dbName))
 		if err != nil {
 			return err
 		}
