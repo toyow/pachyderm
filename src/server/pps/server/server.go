@@ -65,8 +65,8 @@ func NewAPIServer(
 		peerPort:              peerPort,
 		gcPercent:             gcPercent,
 	}
-	apiServer.validateKube()
-	go apiServer.master()
+	//apiServer.validateKube()
+	//go apiServer.master()
 	return apiServer, nil
 }
 
