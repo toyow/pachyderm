@@ -19,6 +19,7 @@ import (
 	"github.com/pachyderm/pachyderm/v2/src/internal/errors"
 	"github.com/pachyderm/pachyderm/v2/src/internal/require"
 	tu "github.com/pachyderm/pachyderm/v2/src/internal/testutil"
+	"github.com/pachyderm/pachyderm/v2/src/internal/testutil/minipach"
 	"github.com/pachyderm/pachyderm/v2/src/pfs"
 	"github.com/pachyderm/pachyderm/v2/src/pps"
 
@@ -57,13 +58,11 @@ func PipelineNames(t *testing.T, c *client.APIClient) []string {
 // TestGetSetBasic creates two users, alice and bob, and gives bob gradually
 // escalating privileges, checking what bob can and can't do after each change
 func TestGetSetBasic(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
-	tu.DeleteAll(t)
-	defer tu.DeleteAll(t)
+	t.Parallel()
+	ctx := minipach.GetTestContext(t)
+
 	alice, bob := robot(tu.UniqueString("alice")), robot(tu.UniqueString("bob"))
-	aliceClient, bobClient := tu.GetAuthenticatedPachClient(t, alice), tu.GetAuthenticatedPachClient(t, bob)
+	aliceClient, bobClient := ctx.GetAuthenticatedPachClient(t, alice), ctx.GetAuthenticatedPachClient(t, bob)
 
 	// create repo, and check that alice is the owner of the new repo
 	dataRepo := tu.UniqueString(t.Name())
@@ -174,13 +173,11 @@ func TestGetSetBasic(t *testing.T) {
 // TestGetSetReverse creates two users, alice and bob, and gives bob gradually
 // shrinking privileges, checking what bob can and can't do after each change
 func TestGetSetReverse(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
-	tu.DeleteAll(t)
-	defer tu.DeleteAll(t)
+	t.Parallel()
+	ctx := minipach.GetTestContext(t)
+
 	alice, bob := robot(tu.UniqueString("alice")), robot(tu.UniqueString("bob"))
-	aliceClient, bobClient := tu.GetAuthenticatedPachClient(t, alice), tu.GetAuthenticatedPachClient(t, bob)
+	aliceClient, bobClient := ctx.GetAuthenticatedPachClient(t, alice), ctx.GetAuthenticatedPachClient(t, bob)
 
 	// create repo, and check that alice is the owner of the new repo
 	dataRepo := tu.UniqueString(t.Name())
@@ -298,13 +295,11 @@ func TestGetSetReverse(t *testing.T) {
 // TestCreateAndUpdateRepo tests that if CreateRepo(foo, update=true) is
 // called, and foo exists, then the ACL for foo won't be modified.
 func TestCreateAndUpdateRepo(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
-	tu.DeleteAll(t)
-	defer tu.DeleteAll(t)
+	t.Parallel()
+	ctx := minipach.GetTestContext(t)
+
 	alice, bob := robot(tu.UniqueString("alice")), robot(tu.UniqueString("bob"))
-	aliceClient, bobClient := tu.GetAuthenticatedPachClient(t, alice), tu.GetAuthenticatedPachClient(t, bob)
+	aliceClient, bobClient := ctx.GetAuthenticatedPachClient(t, alice), ctx.GetAuthenticatedPachClient(t, bob)
 
 	// create repo, and check that alice is the owner of the new repo
 	dataRepo := tu.UniqueString(t.Name())
@@ -352,13 +347,11 @@ func TestCreateAndUpdateRepo(t *testing.T) {
 // called, and foo doesn't exist, then the ACL for foo will still be created and
 // initialized to the correct value
 func TestCreateRepoWithUpdateFlag(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
-	tu.DeleteAll(t)
-	defer tu.DeleteAll(t)
+	t.Parallel()
+	ctx := minipach.GetTestContext(t)
+
 	alice := robot(tu.UniqueString("alice"))
-	aliceClient := tu.GetAuthenticatedPachClient(t, alice)
+	aliceClient := ctx.GetAuthenticatedPachClient(t, alice)
 
 	// create repo, and check that alice is the owner of the new repo
 	dataRepo := tu.UniqueString(t.Name())
@@ -380,9 +373,7 @@ func TestCreateRepoWithUpdateFlag(t *testing.T) {
 }
 
 func TestCreateAndUpdatePipeline(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
+	t.Skip("Skipping integration tests in short mode")
 	tu.DeleteAll(t)
 	defer tu.DeleteAll(t)
 	type createArgs struct {
@@ -867,9 +858,7 @@ func TestPipelineRevoke(t *testing.T) {
 }
 
 func TestStopAndDeletePipeline(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
+	t.Skip("Skipping integration tests in short mode")
 	tu.DeleteAll(t)
 	defer tu.DeleteAll(t)
 	alice, bob := robot(tu.UniqueString("alice")), robot(tu.UniqueString("bob"))
@@ -1004,9 +993,7 @@ func TestStopAndDeletePipeline(t *testing.T) {
 
 // TestStopJob just confirms that the StopJob API works when auth is on
 func TestStopJob(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
+	t.Skip("Skipping integration tests in short mode")
 	tu.DeleteAll(t)
 	alice := robot(tu.UniqueString("alice"))
 	aliceClient := tu.GetAuthenticatedPachClient(t, alice)
@@ -1068,13 +1055,11 @@ func TestStopJob(t *testing.T) {
 // TODO(msteffen): This should maybe go in pachyderm_test, since ListRepo isn't
 // an auth API call
 func TestListAndInspectRepo(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
-	tu.DeleteAll(t)
-	defer tu.DeleteAll(t)
+	t.Parallel()
+	ctx := minipach.GetTestContext(t)
+
 	alice, bob := robot(tu.UniqueString("alice")), robot(tu.UniqueString("bob"))
-	aliceClient, bobClient := tu.GetAuthenticatedPachClient(t, alice), tu.GetAuthenticatedPachClient(t, bob)
+	aliceClient, bobClient := ctx.GetAuthenticatedPachClient(t, alice), ctx.GetAuthenticatedPachClient(t, bob)
 
 	// alice creates a repo and makes Bob a writer
 	repoWriter := tu.UniqueString(t.Name())
@@ -1165,13 +1150,11 @@ func TestListAndInspectRepo(t *testing.T) {
 }
 
 func TestUnprivilegedUserCannotMakeSelfOwner(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
-	tu.DeleteAll(t)
-	defer tu.DeleteAll(t)
+	t.Parallel()
+	ctx := minipach.GetTestContext(t)
+
 	alice, bob := robot(tu.UniqueString("alice")), robot(tu.UniqueString("bob"))
-	aliceClient, bobClient := tu.GetAuthenticatedPachClient(t, alice), tu.GetAuthenticatedPachClient(t, bob)
+	aliceClient, bobClient := ctx.GetAuthenticatedPachClient(t, alice), ctx.GetAuthenticatedPachClient(t, bob)
 
 	// alice creates a repo
 	repo := tu.UniqueString(t.Name())
@@ -1189,13 +1172,11 @@ func TestUnprivilegedUserCannotMakeSelfOwner(t *testing.T) {
 // TestListRepoNotLoggedInError makes sure that if a user isn't logged in, and
 // they call ListRepo(), they get an error.
 func TestListRepoNotLoggedInError(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
-	tu.DeleteAll(t)
-	defer tu.DeleteAll(t)
+	t.Parallel()
+	ctx := minipach.GetTestContext(t)
+
 	alice := robot(tu.UniqueString("alice"))
-	aliceClient, anonClient := tu.GetAuthenticatedPachClient(t, alice), tu.GetUnauthenticatedPachClient(t)
+	aliceClient, anonClient := ctx.GetAuthenticatedPachClient(t, alice), ctx.GetUnauthenticatedPachClient(t)
 
 	// alice creates a repo
 	repo := tu.UniqueString(t.Name())
@@ -1213,16 +1194,14 @@ func TestListRepoNotLoggedInError(t *testing.T) {
 // TestListRepoNoAuthInfoIfDeactivated tests that if auth isn't activated, then
 // ListRepo returns RepoInfos where AuthInfo isn't set (i.e. is nil)
 func TestListRepoNoAuthInfoIfDeactivated(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
-	tu.DeleteAll(t)
-	defer tu.DeleteAll(t)
+	t.Parallel()
+	ctx := minipach.GetTestContext(t)
+
 	// Dont't run this test in parallel, since it deactivates the auth system
 	// globally, so any tests running concurrently will fail
 	alice, bob := robot(tu.UniqueString("alice")), robot(tu.UniqueString("bob"))
-	aliceClient, bobClient := tu.GetAuthenticatedPachClient(t, alice), tu.GetAuthenticatedPachClient(t, bob)
-	adminClient := tu.GetAuthenticatedPachClient(t, auth.RootUser)
+	aliceClient, bobClient := ctx.GetAuthenticatedPachClient(t, alice), ctx.GetAuthenticatedPachClient(t, bob)
+	adminClient := ctx.GetAuthenticatedPachClient(t, auth.RootUser)
 
 	// alice creates a repo
 	repo := tu.UniqueString(t.Name())
@@ -1260,13 +1239,11 @@ func TestListRepoNoAuthInfoIfDeactivated(t *testing.T) {
 // exists gives you an error to that effect, even when auth is already
 // activated (rather than "access denied")
 func TestCreateRepoAlreadyExistsError(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
-	tu.DeleteAll(t)
-	defer tu.DeleteAll(t)
+	t.Parallel()
+	ctx := minipach.GetTestContext(t)
+
 	alice, bob := robot(tu.UniqueString("alice")), robot(tu.UniqueString("bob"))
-	aliceClient, bobClient := tu.GetAuthenticatedPachClient(t, alice), tu.GetAuthenticatedPachClient(t, bob)
+	aliceClient, bobClient := ctx.GetAuthenticatedPachClient(t, alice), ctx.GetAuthenticatedPachClient(t, bob)
 
 	// alice creates a repo
 	repo := tu.UniqueString(t.Name())
@@ -1282,13 +1259,11 @@ func TestCreateRepoAlreadyExistsError(t *testing.T) {
 // TestCreateRepoNotLoggedInError makes sure that if a user isn't logged in, and
 // they call CreateRepo(), they get an error.
 func TestCreateRepoNotLoggedInError(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
-	tu.DeleteAll(t)
-	defer tu.DeleteAll(t)
-	tu.ActivateAuth(t)
-	anonClient := tu.GetUnauthenticatedPachClient(t)
+	t.Parallel()
+	ctx := minipach.GetTestContext(t)
+
+	anonClient := ctx.GetUnauthenticatedPachClient(t)
+	minipach.ActivateAuth(t, anonClient)
 
 	// anonClient tries and fails to create a repo
 	repo := tu.UniqueString(t.Name())
@@ -1302,9 +1277,7 @@ func TestCreateRepoNotLoggedInError(t *testing.T) {
 // this used to return a specific error regardless of permissions, in contrast
 // to the auth-disabled behavior
 func TestCreatePipelineRepoAlreadyExistsPermissions(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
+	t.Skip("Skipping integration tests in short mode")
 	tu.DeleteAll(t)
 	defer tu.DeleteAll(t)
 	alice, bob := robot(tu.UniqueString("alice")), robot(tu.UniqueString("bob"))
@@ -1348,14 +1321,11 @@ func TestCreatePipelineRepoAlreadyExistsPermissions(t *testing.T) {
 // TestAuthorizedEveryone tests that Authorized(user, repo, NONE) tests that the
 // `allClusterUsers` binding  for an ACL sets the minimum authorized scope
 func TestAuthorizedEveryone(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
-	tu.DeleteAll(t)
-	defer tu.DeleteAll(t)
+	t.Parallel()
+	ctx := minipach.GetTestContext(t)
 
 	alice, bob := robot(tu.UniqueString("alice")), robot(tu.UniqueString("bob"))
-	aliceClient, bobClient := tu.GetAuthenticatedPachClient(t, alice), tu.GetAuthenticatedPachClient(t, bob)
+	aliceClient, bobClient := ctx.GetAuthenticatedPachClient(t, alice), ctx.GetAuthenticatedPachClient(t, bob)
 
 	// alice creates a repo
 	repo := tu.UniqueString(t.Name())
@@ -1412,14 +1382,11 @@ func TestAuthorizedEveryone(t *testing.T) {
 
 // TestDeleteAll tests that you must be a cluster admin to call DeleteAll
 func TestDeleteAll(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
-	tu.DeleteAll(t)
-	defer tu.DeleteAll(t)
+	t.Parallel()
+	ctx := minipach.GetTestContext(t)
 
 	alice := robot(tu.UniqueString("alice"))
-	aliceClient, adminClient := tu.GetAuthenticatedPachClient(t, alice), tu.GetAuthenticatedPachClient(t, auth.RootUser)
+	aliceClient, adminClient := ctx.GetAuthenticatedPachClient(t, alice), ctx.GetAuthenticatedPachClient(t, auth.RootUser)
 
 	// alice creates a repo
 	repo := tu.UniqueString(t.Name())
@@ -1450,13 +1417,12 @@ func TestDeleteAll(t *testing.T) {
 // TestListDatum tests that you must have READER access to all of job's
 // input repos to call ListDatum on that job
 func TestListDatum(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
-	tu.DeleteAll(t)
-	defer tu.DeleteAll(t)
+	t.Skip("Skipping integration tests in short mode")
+	t.Parallel()
+	ctx := minipach.GetTestContext(t)
+
 	alice, bob := robot(tu.UniqueString("alice")), robot(tu.UniqueString("bob"))
-	aliceClient, bobClient := tu.GetAuthenticatedPachClient(t, alice), tu.GetAuthenticatedPachClient(t, bob)
+	aliceClient, bobClient := ctx.GetAuthenticatedPachClient(t, alice), ctx.GetAuthenticatedPachClient(t, bob)
 
 	// alice creates a repo
 	repoA := tu.UniqueString(t.Name())
@@ -1545,9 +1511,7 @@ func TestListDatum(t *testing.T) {
 // (but doesn't return a given job if you don't have access to the job's output
 // repo)
 func TestListJob(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
+	t.Skip("Skipping integration tests in short mode")
 	tu.DeleteAll(t)
 	defer tu.DeleteAll(t)
 	alice, bob := robot(tu.UniqueString("alice")), robot(tu.UniqueString("bob"))
@@ -1622,13 +1586,12 @@ func TestListJob(t *testing.T) {
 
 // TestInspectDatum tests InspectDatum runs even when auth is activated
 func TestInspectDatum(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
-	tu.DeleteAll(t)
-	defer tu.DeleteAll(t)
+	t.Skip("Skipping integration tests in short mode")
+	t.Parallel()
+	ctx := minipach.GetTestContext(t)
+
 	alice := robot(tu.UniqueString("alice"))
-	aliceClient := tu.GetAuthenticatedPachClient(t, alice)
+	aliceClient := ctx.GetAuthenticatedPachClient(t, alice)
 
 	// alice creates a repo
 	repo := tu.UniqueString(t.Name())
@@ -1928,11 +1891,8 @@ func TestPipelineNewInput(t *testing.T) {
 }
 
 func TestModifyMembers(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
-	tu.DeleteAll(t)
-	defer tu.DeleteAll(t)
+	t.Parallel()
+	ctx := minipach.GetTestContext(t)
 
 	alice := robot(tu.UniqueString("alice"))
 	bob := robot(tu.UniqueString("bob"))
@@ -1940,7 +1900,7 @@ func TestModifyMembers(t *testing.T) {
 	engineering := tu.UniqueString("engineering")
 	security := tu.UniqueString("security")
 
-	adminClient := tu.GetAuthenticatedPachClient(t, auth.RootUser)
+	adminClient := ctx.GetAuthenticatedPachClient(t, auth.RootUser)
 
 	// This is a sequence dependent list of tests
 	tests := []struct {
@@ -2054,18 +2014,15 @@ func TestModifyMembers(t *testing.T) {
 }
 
 func TestSetGroupsForUser(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
-	tu.DeleteAll(t)
-	defer tu.DeleteAll(t)
+	t.Parallel()
+	ctx := minipach.GetTestContext(t)
 
 	alice := robot(tu.UniqueString("alice"))
 	organization := tu.UniqueString("organization")
 	engineering := tu.UniqueString("engineering")
 	security := tu.UniqueString("security")
 
-	adminClient := tu.GetAuthenticatedPachClient(t, auth.RootUser)
+	adminClient := ctx.GetAuthenticatedPachClient(t, auth.RootUser)
 
 	groups := []string{organization, engineering}
 	_, err := adminClient.SetGroupsForUser(adminClient.Ctx(), &auth.SetGroupsForUserRequest{
@@ -2145,18 +2102,15 @@ func TestSetGroupsForUser(t *testing.T) {
 }
 
 func TestGetGroupsEmpty(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
-	tu.DeleteAll(t)
-	defer tu.DeleteAll(t)
+	t.Parallel()
+	ctx := minipach.GetTestContext(t)
 
 	alice := robot(tu.UniqueString("alice"))
 	organization := tu.UniqueString("organization")
 	engineering := tu.UniqueString("engineering")
 	security := tu.UniqueString("security")
 
-	adminClient := tu.GetAuthenticatedPachClient(t, auth.RootUser)
+	adminClient := ctx.GetAuthenticatedPachClient(t, auth.RootUser)
 
 	_, err := adminClient.SetGroupsForUser(adminClient.Ctx(), &auth.SetGroupsForUserRequest{
 		Username: alice,
@@ -2164,7 +2118,7 @@ func TestGetGroupsEmpty(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	aliceClient := tu.GetAuthenticatedPachClient(t, alice)
+	aliceClient := ctx.GetAuthenticatedPachClient(t, alice)
 	groups, err := aliceClient.GetGroups(aliceClient.Ctx(), &auth.GetGroupsRequest{})
 	require.NoError(t, err)
 	require.ElementsEqual(t, []string{organization, engineering, security}, groups.Groups)
@@ -2177,13 +2131,11 @@ func TestGetGroupsEmpty(t *testing.T) {
 // TestGetJobsBugFix tests the fix for https://github.com/pachyderm/pachyderm/v2/issues/2879
 // where calling pps.ListJob when not logged in would delete all old jobs
 func TestGetJobsBugFix(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
-	tu.DeleteAll(t)
-	defer tu.DeleteAll(t)
+	t.Parallel()
+	ctx := minipach.GetTestContext(t)
+
 	alice := robot(tu.UniqueString("alice"))
-	aliceClient, anonClient := tu.GetAuthenticatedPachClient(t, alice), tu.GetUnauthenticatedPachClient(t)
+	aliceClient, anonClient := ctx.GetAuthenticatedPachClient(t, alice), ctx.GetUnauthenticatedPachClient(t)
 
 	// alice creates a repo
 	repo := tu.UniqueString(t.Name())
@@ -2273,9 +2225,7 @@ func TestS3GatewayAuthRequests(t *testing.T) {
 // TestDeleteFailedPipeline creates a pipeline with an invalid image and then
 // tries to delete it (which shouldn't be blocked by the auth system)
 func TestDeleteFailedPipeline(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
+	t.Skip("Skipping integration tests in short mode")
 	tu.DeleteAll(t)
 	defer tu.DeleteAll(t)
 	alice := robot(tu.UniqueString("alice"))
@@ -2314,9 +2264,7 @@ func TestDeleteFailedPipeline(t *testing.T) {
 // and output repos, and then confirms that DeletePipeline still works (i.e.
 // the missing repos/ACLs don't cause an auth error).
 func TestDeletePipelineMissingRepos(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
+	t.Skip("Skipping integration tests in short mode")
 	tu.DeleteAll(t)
 	defer tu.DeleteAll(t)
 	alice := robot(tu.UniqueString("alice"))
@@ -2362,11 +2310,11 @@ func TestDeletePipelineMissingRepos(t *testing.T) {
 
 // TestDeactivateFSAdmin tests that users with the FS admin role can't call Deactivate
 func TestDeactivateFSAdmin(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
+	t.Parallel()
+	ctx := minipach.GetTestContext(t)
+
 	alice := robot(tu.UniqueString("alice"))
-	aliceClient, adminClient := tu.GetAuthenticatedPachClient(t, alice), tu.GetAuthenticatedPachClient(t, auth.RootUser)
+	aliceClient, adminClient := ctx.GetAuthenticatedPachClient(t, alice), ctx.GetAuthenticatedPachClient(t, auth.RootUser)
 
 	// admin makes alice an fs admin
 	require.NoError(t, adminClient.ModifyClusterRoleBinding(alice, []string{auth.RepoOwnerRole}))
@@ -2384,14 +2332,11 @@ func TestDeactivateFSAdmin(t *testing.T) {
 
 // TestExtractAuthToken tests that admins can extract hashed robot auth tokens
 func TestExtractAuthToken(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
-	tu.DeleteAll(t)
-	defer tu.DeleteAll(t)
+	t.Parallel()
+	ctx := minipach.GetTestContext(t)
 
 	alice := robot(tu.UniqueString("alice"))
-	aliceClient, adminClient := tu.GetAuthenticatedPachClient(t, alice), tu.GetAuthenticatedPachClient(t, auth.RootUser)
+	aliceClient, adminClient := ctx.GetAuthenticatedPachClient(t, alice), ctx.GetAuthenticatedPachClient(t, auth.RootUser)
 
 	// alice can't extract auth tokens because she's not an admin
 	_, err := aliceClient.ExtractAuthTokens(aliceClient.Ctx(), &auth.ExtractAuthTokensRequest{})
@@ -2433,11 +2378,8 @@ func TestExtractAuthToken(t *testing.T) {
 
 // TestRestoreAuthToken tests that admins can restore hashed auth tokens that have been extracted
 func TestRestoreAuthToken(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
-	tu.DeleteAll(t)
-	defer tu.DeleteAll(t)
+	t.Parallel()
+	ctx := minipach.GetTestContext(t)
 
 	// Create a request to restore a token with known plaintext
 	req := &auth.RestoreAuthTokenRequest{
@@ -2448,7 +2390,7 @@ func TestRestoreAuthToken(t *testing.T) {
 	}
 
 	alice := robot(tu.UniqueString("alice"))
-	aliceClient, adminClient := tu.GetAuthenticatedPachClient(t, alice), tu.GetAuthenticatedPachClient(t, auth.RootUser)
+	aliceClient, adminClient := ctx.GetAuthenticatedPachClient(t, alice), ctx.GetAuthenticatedPachClient(t, auth.RootUser)
 
 	// alice can't restore auth tokens because she's not an admin
 	_, err := aliceClient.RestoreAuthToken(aliceClient.Ctx(), req)
@@ -2502,9 +2444,7 @@ func TestRestoreAuthToken(t *testing.T) {
 // Need to restructure testing such that we have the implementation of this
 // test in one place while still being able to test auth enabled and disabled clusters.
 func TestDebug(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
+	t.Skip("Skipping integration tests in short mode")
 	tu.DeleteAll(t)
 	defer tu.DeleteAll(t)
 
@@ -2604,14 +2544,11 @@ func TestDebug(t *testing.T) {
 }
 
 func TestDeleteExpiredAuthTokens(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
-	tu.DeleteAll(t)
-	defer tu.DeleteAll(t)
+	t.Parallel()
+	ctx := minipach.GetTestContext(t)
 
 	// generate auth credentials
-	adminClient := tu.GetAuthenticatedPachClient(t, auth.RootUser)
+	adminClient := ctx.GetAuthenticatedPachClient(t, auth.RootUser)
 
 	// create a token that will instantly expire, a token that will expire later, and a token that will never expire
 	noExpirationResp, noExpErr := adminClient.GetRobotToken(adminClient.Ctx(), &auth.GetRobotTokenRequest{Robot: "robot:alice"})
