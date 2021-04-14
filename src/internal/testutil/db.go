@@ -64,6 +64,7 @@ func NewPostgresDeployment(t testing.TB) TestDatabaseDeployment {
 	require.NoError(t, encoder.Encode(configMap))
 
 	storageClass := assets.PostgresStorageClass(assetOpts, assets.LocalBackend)
+	require.NoError(t, err)
 	require.NoError(t, encoder.Encode(storageClass))
 
 	headlessService := assets.PostgresHeadlessService(assetOpts)
