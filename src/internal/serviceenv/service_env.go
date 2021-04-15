@@ -11,11 +11,12 @@ import (
 	"github.com/pachyderm/pachyderm/v2/src/internal/backoff"
 	"github.com/pachyderm/pachyderm/v2/src/internal/dbutil"
 	"github.com/pachyderm/pachyderm/v2/src/internal/errors"
+	"github.com/pachyderm/pachyderm/v2/src/internal/log"
 
 	etcd "github.com/coreos/etcd/clientv3"
 	loki "github.com/grafana/loki/pkg/logcli/client"
 	"github.com/jmoiron/sqlx"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"golang.org/x/sync/errgroup"
 	kube "k8s.io/client-go/kubernetes"
@@ -35,6 +36,7 @@ type ServiceEnv interface {
 	GetDBClient() *sqlx.DB
 	Context() context.Context
 	Close() error
+	GetLogger(service string) log.Logger
 }
 
 // NonblockingServiceEnv is an implementation of ServiceEnv that initializes
@@ -179,7 +181,7 @@ func (env *NonblockingServiceEnv) initKubeClient() error {
 		cfg, err := rest.InClusterConfig()
 		if err != nil {
 			// InClusterConfig failed, fall back to insecure config
-			log.Errorf("falling back to insecure kube client due to error from NewInCluster: %s", err)
+			logrus.Errorf("falling back to insecure kube client due to error from NewInCluster: %s", err)
 			kubeAddr, ok = os.LookupEnv("KUBERNETES_PORT_443_TCP_ADDR")
 			if !ok {
 				return errors.Wrapf(err, "can't fall back to insecure kube client due to missing env var (failed to retrieve in-cluster config")
@@ -301,4 +303,8 @@ func (env *NonblockingServiceEnv) Close() error {
 	eg.Go(env.GetEtcdClient().Close)
 	eg.Go(env.GetDBClient().Close)
 	return eg.Wait()
+}
+
+func (env *NonblockingServiceEnv) GetLogger(service string) log.Logger {
+	return log.NewLogger(service)
 }
