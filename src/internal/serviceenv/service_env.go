@@ -1,6 +1,7 @@
 package serviceenv
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"net"
@@ -17,7 +18,6 @@ import (
 	loki "github.com/grafana/loki/pkg/logcli/client"
 	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/net/context"
 	"golang.org/x/sync/errgroup"
 	kube "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -37,6 +37,7 @@ type ServiceEnv interface {
 	Context() context.Context
 	Close() error
 	GetLogger(service string) log.Logger
+	GetContext() context.Context
 }
 
 // NonblockingServiceEnv is an implementation of ServiceEnv that initializes
@@ -307,4 +308,8 @@ func (env *NonblockingServiceEnv) Close() error {
 
 func (env *NonblockingServiceEnv) GetLogger(service string) log.Logger {
 	return log.NewLogger(service)
+}
+
+func (env *NonblockingServiceEnv) GetContext() context.Context {
+	return context.Background()
 }
